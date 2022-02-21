@@ -19,7 +19,7 @@ impl From<HashMap<String, String>> for Decider {
 impl Decider {
     pub fn decide(&self) {
         let driver: Driver = self.driver_options.get("driver").expect("Option driver is missing. Did you forget to add --driver option?").parse().unwrap();
-        let project_path = self.driver_options.get("path").expect("Option path is missing from options. Did you forget to add --path option?");
+        let project_path = self.driver_options.get("path").expect("Option path is missing. Did you forget to add --path option?");
         
         match driver {
             Driver::PHP => {
