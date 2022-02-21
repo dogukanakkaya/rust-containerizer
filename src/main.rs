@@ -17,8 +17,5 @@ fn main() {
     }
 
     let decider = Decider::from(driver_options);
-
-    println!("{:?}", decider);
-
-    
+    decider.decide();
 }
