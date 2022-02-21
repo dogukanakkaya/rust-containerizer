@@ -1,5 +1,6 @@
 use std::env;
 use std::collections::HashMap;
+use drivers::decider::Decider;
 
 mod drivers;
 
@@ -14,5 +15,10 @@ fn main() {
             };
         }
     }
-    println!("driver = {:?}", driver_options);
+
+    let decider = Decider::from(driver_options);
+
+    println!("{:?}", decider);
+
+    
 }
