@@ -33,7 +33,11 @@ impl Decider {
                 // other used extensions can be guessed from .env file
                 dotenv::from_filename(format!("{}/.env", project_path)).expect(&format!(".env file is not exists in path {}", project_path));
 
-                println!("{:?}", composer.data()["license"]);
+                let mut version = composer.data()["require"]["php"].as_str().unwrap_or_else(|| "latest");
+                                
+                let mut dockerfile_contents = b"FROM php{}-fpm";
+
+
             }
             Driver::NodeJS => unimplemented!(),
             _ => unimplemented!()
