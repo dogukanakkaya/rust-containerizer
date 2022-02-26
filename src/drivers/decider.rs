@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::prelude::*;
 use super::driver::Driver;
 use super::php::composer::Composer;
 use dotenv;
@@ -20,6 +22,8 @@ impl Decider {
     pub fn decide(&self) {
         let driver: Driver = self.driver_options.get("driver").expect("Option driver is missing. Did you forget to add --driver option?").parse().unwrap();
         let project_path = self.driver_options.get("path").expect("Option path is missing. Did you forget to add --path option?");
+
+        let mut dockerfile = File::create(format!("{}/Dockerfile", project_path)).expect("Dockerfile can't be created.");
         
         match driver {
             Driver::PHP => {
