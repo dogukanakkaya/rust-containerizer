@@ -19,7 +19,8 @@ impl Generator {
 
         // install nodejs if package.json exists
         match package {
-            Ok(p) => {
+            Ok(_) => {
+                // find node version from package.json or somehow
                 dockerfile_contents.push_str("RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -\nRUN apt-get-install -y nodejs");
             },
             _ => {}
