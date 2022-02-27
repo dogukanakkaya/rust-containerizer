@@ -10,12 +10,9 @@ pub struct Composer {
 
 impl Composer {
     pub fn new(filepath: String, version: u8) -> Self {
-        let data = json::parse(&fs::read_to_string(&filepath).unwrap());
+        let data = json::parse(&fs::read_to_string(&filepath).unwrap()).expect(&format!("{} cannot be parsed to json.", filepath));
 
-        match data {
-            Ok(d) => Self {filepath, version, data: d},
-            Err(e) => panic!("Error while reading composer.json file: {}", e)
-        }
+        Self {filepath, version, data}
     }
 
     pub fn data(&self) -> &JsonValue {

@@ -9,10 +9,11 @@ pub struct Package {
 
 impl Package {
     pub fn new(filepath: String) -> Result<Self, String> {
-        let data = json::parse(&fs::read_to_string(&filepath).unwrap());
-
-        match data {
-            Ok(d) => Ok(Self {filepath, data: d}),
+        match fs::read_to_string(&filepath) {
+            Ok(d) => {
+                let data = json::parse(&d).expect(&format!("{} cannot be parsed to json.", filepath));
+                Ok(Self {filepath, data })
+            },
             Err(e) => Err(format!("Error while reading package.json file: {}", e))
         }
     }
