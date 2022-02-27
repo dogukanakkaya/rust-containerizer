@@ -1,8 +1,6 @@
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::prelude::*;
 use super::driver::Driver;
-use super::php::composer::Composer;
+use super::php::generator::Generator as PHPGenerator;
 use dotenv;
 
 #[derive(Debug)]
@@ -23,22 +21,11 @@ impl Decider {
         let driver: Driver = self.driver_options.get("driver").expect("Option driver is missing. Did you forget to add --driver option?").parse().unwrap();
         let project_path = self.driver_options.get("path").expect("Option path is missing. Did you forget to add --path option?");
 
-        let mut dockerfile = File::create(format!("{}/Dockerfile", project_path)).expect("Dockerfile can't be created.");
+        // used extensions can be guessed from .env file
+        dotenv::from_filename(format!("{}/.env", project_path)).expect(&format!(".env file is not exists in path {}", project_path));
         
         match driver {
-            Driver::PHP => {
-                // used extensions can be found in composer.json's require object like "ext-pdo", "ext-mongo"
-                let composer = Composer::new(format!("{}/composer.json", project_path), 2);
-
-                // other used extensions can be guessed from .env file
-                dotenv::from_filename(format!("{}/.env", project_path)).expect(&format!(".env file is not exists in path {}", project_path));
-
-                let mut version = composer.data()["require"]["php"].as_str().unwrap_or_else(|| "latest");
-                                
-                let mut dockerfile_contents = b"FROM php{}-fpm";
-
-
-            }
+            Driver::PHP => PHPGenerator::run(project_path),
             Driver::NodeJS => unimplemented!(),
             _ => unimplemented!()
         };
