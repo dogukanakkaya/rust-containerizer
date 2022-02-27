@@ -2,19 +2,18 @@ use std::fs;
 
 use json::JsonValue;
 
-pub struct Composer {
+pub struct Package {
     filepath: String,
-    version: u8,
     data: JsonValue
 }
 
-impl Composer {
-    pub fn new(filepath: String, version: u8) -> Self {
+impl Package {
+    pub fn new(filepath: String) -> Result<Self, String> {
         let data = json::parse(&fs::read_to_string(&filepath).unwrap());
 
         match data {
-            Ok(d) => Self {filepath, version, data: d},
-            Err(e) => panic!("Error while reading composer.json file: {}", e)
+            Ok(d) => Ok(Self {filepath, data: d}),
+            Err(e) => Err(format!("Error while reading package.json file: {}", e))
         }
     }
 
