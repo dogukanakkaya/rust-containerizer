@@ -9,7 +9,7 @@ impl Generator {
         let mut dockerfile = File::create(format!("{}/Dockerfile", project_path)).expect("Dockerfile can't be created.");
 
         // used extensions can be found in composer.json's require object like "ext-pdo", "ext-mongo"
-        let composer = Composer::new(format!("{}/composer.json", project_path), 2);
+        let composer = Composer::new(format!("{}/composer.json", project_path));
 
         let php_version = composer.data()["require"]["php"].as_str().unwrap_or_else(|| "latest").chars().filter(|x| !vec!['<', '>', '=', '^', '~'].contains(x)).collect::<String>();
 
@@ -20,7 +20,7 @@ impl Generator {
         // install nodejs if package.json exists
         match package {
             Ok(_) => {
-                // find node version from package.json or somehow
+                // find node version from package.json or somehow if can't be found by package.json
                 dockerfile_contents.push_str("RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -\nRUN apt-get-install -y nodejs");
             },
             _ => {}
