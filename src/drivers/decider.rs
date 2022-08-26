@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use super::driver::Driver;
-use super::php::generator::Generator as PHPGenerator;
+use super::generator::Generator;
+use super::php::generator::PHPGenerator;
 use dotenv;
 
 #[derive(Debug)]
@@ -25,7 +26,7 @@ impl Decider {
         dotenv::from_filename(format!("{}/.env", project_path)).expect(&format!(".env file is not exists in path {}", project_path));
         
         match driver {
-            Driver::PHP => PHPGenerator::run(project_path),
+            Driver::PHP => PHPGenerator::generate(project_path),
             Driver::NodeJS => unimplemented!(),
             _ => unimplemented!()
         };
