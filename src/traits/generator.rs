@@ -1,3 +1,4 @@
 pub trait Generator {
-    fn generate(project_path: &String);
+    fn generate(&self);
+    fn find_images(&self);
 }

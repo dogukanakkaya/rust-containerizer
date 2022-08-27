@@ -27,8 +27,16 @@ impl Decider {
         dotenv::from_filename(format!("{}/.env", project_path)).expect(&format!(".env file is not exists in path {}", project_path));
         
         match driver {
-            Driver::PHP => PHPGenerator::generate(project_path),
-            Driver::NodeJS => NodeGenerator::generate(project_path),
+            Driver::PHP => unimplemented!(),// PHPGenerator::generate(project_path),
+            Driver::NodeJS => {
+                let node_generator = NodeGenerator::new(project_path);
+
+                node_generator.generate();
+
+                let images = node_generator.find_images();
+
+                // create compose file with necessary images
+            },
             _ => unimplemented!()
         };
     }

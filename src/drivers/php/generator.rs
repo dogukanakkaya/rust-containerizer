@@ -4,16 +4,15 @@ use crate::traits::generator::Generator;
 use std::collections::HashMap;
 use std::{fs::File, io::Write};
 
-pub struct PHPGenerator {
+pub struct PHPGenerator<'a> {
+    project_path: &'a String
     // lines: HashMap<i8, String>,
 }
 
-impl PHPGenerator {
-    // fn new() -> Self {
-    //     Self {
-    //         lines: HashMap::new(),
-    //     }
-    // }
+impl<'a> PHPGenerator<'a> {
+    fn new(project_path: &'a String) -> Self {
+        Self { project_path }
+    }
 
     fn generate_composer(composer: Composer) -> String {
         let php_version = composer.data()["require"]["php"]
@@ -91,13 +90,13 @@ impl PHPGenerator {
     }
 }
 
-impl Generator for PHPGenerator {
-    fn generate(project_path: &String) {
-        let mut dockerfile = File::create(format!("{}/Dockerfile", project_path)).expect("Dockerfile can't be created.");
+impl Generator for PHPGenerator<'_> {
+    fn generate(&self) {
+        let mut dockerfile = File::create(format!("{}/Dockerfile", self.project_path)).expect("Dockerfile can't be created.");
         let mut dockerfile_contents = String::new();
 
-        let composer = Composer::new(format!("{}/composer.json", project_path)).unwrap();
-        let package = Package::new(format!("{}/package.json", project_path));
+        let composer = Composer::new(format!("{}/composer.json", self.project_path)).unwrap();
+        let package = Package::new(format!("{}/package.json", self.project_path));
 
         // let php_generator = Self::new();
 
@@ -109,8 +108,12 @@ impl Generator for PHPGenerator {
         }
 
         match dockerfile.write_all(dockerfile_contents.as_bytes()) {
-            Ok(()) => println!("Dockerfile generated at: {}", project_path),
+            Ok(()) => println!("Dockerfile generated at: {}", self.project_path),
             Err(_) => unimplemented!(),
         }
+    }
+
+    fn find_images(&self) {
+        
     }
 }
