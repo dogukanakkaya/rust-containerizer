@@ -1,14 +1,15 @@
 use crate::drivers::js::package::Package;
 use crate::os::os::Os;
-use crate::traits::generator::Generator;
+use crate::traits::{compose::Compose, generator::Generator};
+use serde_json::json;
 use std::{collections::HashMap, fs::File, io::Write};
 
-pub struct NodeGenerator {
+pub struct JSGenerator {
     driver_options: HashMap<String, String>,
     package: Package,
 }
 
-impl NodeGenerator {
+impl JSGenerator {
     pub fn new(driver_options: HashMap<String, String>) -> Self {
         let project_path = driver_options.get("path").unwrap();
 
@@ -73,7 +74,7 @@ impl NodeGenerator {
     }
 }
 
-impl Generator for NodeGenerator {
+impl Generator for JSGenerator {
     fn generate(&self) {
         let project_path = self.driver_options.get("path").unwrap();
 
@@ -106,5 +107,32 @@ impl Generator for NodeGenerator {
             Ok(()) => println!("Dockerfile generated at: {}", project_path),
             Err(_) => unimplemented!(),
         }
+    }
+}
+
+impl Compose for JSGenerator {
+    fn find_compose_definition(&self) -> HashMap<&str, serde_json::Value> {
+        let project_path = self.driver_options.get("path").unwrap();
+        let images = &self.find_images();
+        let depends_on = images.keys().collect::<Vec<&String>>();
+
+        HashMap::from([(
+            "services",
+            json!({
+                "app": {
+                    "build": ".",
+                    "image": format!("{}-image", project_path),
+                    "volumes": [
+                        "./:/app",
+                        "/app/node_modules"
+                    ],
+                    "ports": [
+                        "8000:8000"
+                    ],
+                    "env_file": "./.env",
+                    "depends_on": depends_on
+                }
+            }),
+        )])
     }
 }

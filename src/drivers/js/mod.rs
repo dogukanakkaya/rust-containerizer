@@ -1,2 +1,2 @@
-pub mod node;
+pub mod generator;
 pub mod package;

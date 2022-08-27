@@ -1,6 +1,6 @@
+mod compose;
 mod context;
 mod drivers;
-// mod images;
 mod os;
 mod traits;
 
