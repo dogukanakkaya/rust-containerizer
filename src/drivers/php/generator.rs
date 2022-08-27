@@ -34,6 +34,9 @@ impl PHPGenerator {
             WORKDIR /var/www/php
             RUN apt-get update
             RUN docker-php-ext-install {}
+            COPY composer.json composer.lock symfony.lock ./
+            RUN composer install
+            COPY . .
             ",
             php_version,
             extensions.join(" ")
@@ -53,6 +56,9 @@ impl PHPGenerator {
             "
             RUN curl -fsSL https://deb.nodesource.com/setup_{}.x | bash -
             RUN apt-get-install -y nodejs
+            COPY package*.json .
+            RUN npm i
+            COPY . .
             ",
             &node_version[..node_version.find(".").unwrap()]
         )
