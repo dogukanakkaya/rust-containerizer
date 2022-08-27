@@ -1,7 +1,8 @@
 use std::collections::HashMap;
+use crate::traits::generator::Generator;
 use super::driver::Driver;
-use super::generator::Generator;
 use super::php::generator::PHPGenerator;
+use super::js::node::generator::NodeGenerator;
 use dotenv;
 
 #[derive(Debug)]
@@ -27,7 +28,7 @@ impl Decider {
         
         match driver {
             Driver::PHP => PHPGenerator::generate(project_path),
-            Driver::NodeJS => unimplemented!(),
+            Driver::NodeJS => NodeGenerator::generate(project_path),
             _ => unimplemented!()
         };
     }

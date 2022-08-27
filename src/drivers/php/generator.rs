@@ -1,12 +1,20 @@
 use super::composer::Composer;
-use crate::drivers::{generator::Generator, js::package::Package};
+use crate::drivers::js::package::Package;
+use crate::traits::generator::Generator;
+use std::collections::HashMap;
 use std::{fs::File, io::Write};
 
-const SUPPORTED_IMAGES: [&'static str; 4] = ["elasticsearch", "redis", "mysql", "postgresql"];
-
-pub struct PHPGenerator {}
+pub struct PHPGenerator {
+    // lines: HashMap<i8, String>,
+}
 
 impl PHPGenerator {
+    // fn new() -> Self {
+    //     Self {
+    //         lines: HashMap::new(),
+    //     }
+    // }
+
     fn generate_composer(composer: Composer) -> String {
         let php_version = composer.data()["require"]["php"]
             .as_str()
@@ -27,6 +35,24 @@ impl PHPGenerator {
 
             // check for known packages like elasticsearch/elasticsearch and create a compose file for those
         }
+
+        // self.lines.insert(1, format!(
+        //     "
+        //     FROM php:{}-fpm
+        //     WORKDIR /var/www/php
+        //     RUN apt-get update
+        //     RUN docker-php-ext-install {}
+        //     COPY composer.json composer.lock symfony.lock ./
+        //     ",
+        //     php_version,
+        //     extensions.join(" ")
+        // ));
+        // self.lines.insert(3, format!(
+        //     "
+        //     RUN composer install
+        //     COPY . .
+        //     "
+        // ));
 
         format!(
             "
@@ -72,6 +98,8 @@ impl Generator for PHPGenerator {
 
         let composer = Composer::new(format!("{}/composer.json", project_path)).unwrap();
         let package = Package::new(format!("{}/package.json", project_path));
+
+        // let php_generator = Self::new();
 
         dockerfile_contents.push_str(Self::generate_composer(composer).as_str());
 
