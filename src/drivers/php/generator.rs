@@ -10,7 +10,7 @@ pub struct PHPGenerator<'a> {
 }
 
 impl<'a> PHPGenerator<'a> {
-    fn new(project_path: &'a String) -> Self {
+    pub fn new(project_path: &'a String) -> Self {
         Self { project_path }
     }
 
@@ -113,7 +113,7 @@ impl Generator for PHPGenerator<'_> {
         }
     }
 
-    fn find_images(&self) {
-        
+    fn find_images(&self) -> Vec<String> {
+        vec![String::new()]
     }
 }

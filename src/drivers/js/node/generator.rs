@@ -48,7 +48,7 @@ impl Generator for NodeGenerator<'_> {
         }
     }
 
-    fn find_images(&self) {
-        
+    fn find_images(&self) -> Vec<String> {
+        vec![String::new()]
     }
 }
