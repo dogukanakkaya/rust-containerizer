@@ -21,4 +21,13 @@ impl Package {
     pub fn data(&self) -> &Value {
         &self.data
     }
+
+    pub fn find_node_version(&self) -> String {
+        self.data["engines"]["node"]
+            .as_str()
+            .unwrap_or("16")
+            .chars()
+            .filter(|x| !vec!['<', '>', '=', '^', '~'].contains(x))
+            .collect::<String>()
+    }
 }

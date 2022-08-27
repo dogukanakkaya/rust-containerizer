@@ -5,6 +5,7 @@ use drivers::decider::Decider;
 mod drivers;
 // mod images;
 mod traits;
+mod os;
 
 fn main() {
     let mut driver_options = HashMap::new();

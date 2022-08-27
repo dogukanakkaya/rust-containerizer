@@ -20,7 +20,9 @@ impl From<HashMap<String, String>> for Decider {
 
 impl Decider {
     pub fn decide(&self) {
-        let driver: Driver = self.driver_options.get("driver").expect("Option driver is missing. Did you forget to add --driver option?").parse().unwrap();
+        let driver = self.driver_options.get("driver").expect("Option driver is missing. Did you forget to add --driver option?")
+            .parse::<Driver>()
+            .unwrap();
         let project_path = self.driver_options.get("path").expect("Option path is missing. Did you forget to add --path option?");
 
         // used extensions can be guessed from .env file
@@ -28,7 +30,7 @@ impl Decider {
         
         let (images, i) = match driver {
             Driver::PHP => {
-                let php_generator = PHPGenerator::new(project_path);
+                let php_generator = PHPGenerator::new(self.driver_options.clone());
                 php_generator.generate();
 
                 (
@@ -37,7 +39,7 @@ impl Decider {
                 )
             },
             Driver::NodeJS => {
-                let node_generator = NodeGenerator::new(project_path);
+                let node_generator = NodeGenerator::new(self.driver_options.clone());
                 node_generator.generate();
 
                 (
@@ -49,9 +51,5 @@ impl Decider {
         };
 
         println!("images: {:?}", images);
-    }
-
-    pub fn driver_options(&self) -> &HashMap<String, String> {
-        &self.driver_options
     }
 }

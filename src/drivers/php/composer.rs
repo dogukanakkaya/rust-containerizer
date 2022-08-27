@@ -22,4 +22,13 @@ impl Composer {
     pub fn data(&self) -> &Value {
         &self.data
     }
+
+    pub fn find_php_version(&self) -> String {
+        self.data["require"]["php"]
+            .as_str()
+            .unwrap_or("latest")
+            .chars()
+            .filter(|x| !vec!['<', '>', '=', '^', '~'].contains(x))
+            .collect::<String>()
+    }
 }
