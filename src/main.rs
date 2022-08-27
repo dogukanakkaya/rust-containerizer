@@ -1,11 +1,12 @@
-use std::env;
-use std::collections::HashMap;
-use drivers::decider::Decider;
-
+mod decider;
 mod drivers;
 // mod images;
-mod traits;
 mod os;
+mod traits;
+
+use decider::Decider;
+use std::collections::HashMap;
+use std::env;
 
 fn main() {
     let mut driver_options = HashMap::new();
@@ -14,7 +15,7 @@ fn main() {
         if arg.starts_with("--") {
             match arg.find('=') {
                 Some(i) => driver_options.insert(arg[2..i].to_string(), arg[i + 1..].to_string()),
-                _ => None
+                _ => None,
             };
         }
     }

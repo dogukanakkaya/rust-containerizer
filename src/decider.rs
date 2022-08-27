@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use crate::traits::generator::Generator;
-use super::driver::Driver;
-use super::php::generator::PHPGenerator;
-use super::js::node::generator::NodeGenerator;
+use crate::drivers::driver::Driver;
+use crate::drivers::php::generator::PHPGenerator;
+use crate::drivers::js::node::generator::NodeGenerator;
 use dotenv;
 
 #[derive(Debug)]
