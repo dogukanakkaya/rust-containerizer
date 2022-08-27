@@ -1,10 +1,10 @@
-mod decider;
+mod context;
 mod drivers;
 // mod images;
 mod os;
 mod traits;
 
-use decider::Decider;
+use context::Context;
 use std::collections::HashMap;
 use std::env;
 
@@ -20,6 +20,6 @@ fn main() {
         }
     }
 
-    let decider = Decider::from(driver_options);
+    let decider = Context::from(driver_options);
     decider.decide();
 }
