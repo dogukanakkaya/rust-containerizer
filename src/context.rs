@@ -20,7 +20,7 @@ impl From<HashMap<String, String>> for Context {
 }
 
 impl Context {
-    pub fn decide(&self) {
+    pub fn exec(self) {
         let driver = self
             .driver_options
             .get("driver")

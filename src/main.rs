@@ -20,6 +20,6 @@ fn main() {
         }
     }
 
-    let decider = Context::from(driver_options);
-    decider.decide();
+    let context = Context::from(driver_options);
+    context.exec();
 }
