@@ -1,18 +1,22 @@
 use crate::drivers::js::package::Package;
 use crate::traits::generator::Generator;
-use std::{fs::File, io::Write};
+use std::{fs::File, io::Write, collections::HashMap};
 
 pub struct NodeGenerator<'a> {
-    project_path: &'a String
+    project_path: &'a String,
+    package: Package
 }
 
 impl<'a> NodeGenerator<'a> {
     pub fn new(project_path: &'a String) -> Self {
-        Self { project_path }
+        Self {
+            project_path,
+            package: Package::new(format!("{}/package.json", project_path)).unwrap()
+        }
     }
 
-    fn generate_package(package: Package) -> String {
-        let node_version = package.data()["engines"]["node"]
+    fn generate_package(&self) -> String {
+        let node_version = self.package.data()["engines"]["node"]
             .as_str()
             .unwrap_or("16")
             .chars()
@@ -38,9 +42,7 @@ impl Generator for NodeGenerator<'_> {
         let mut dockerfile = File::create(format!("{}/Dockerfile", self.project_path)).expect("Dockerfile can't be created.");
         let mut dockerfile_contents = String::new();
 
-        let package = Package::new(format!("{}/package.json", self.project_path)).unwrap();
-
-        dockerfile_contents.push_str(Self::generate_package(package).as_str());
+        dockerfile_contents.push_str(self.generate_package().as_str());
 
         match dockerfile.write_all(dockerfile_contents.as_bytes()) {
             Ok(()) => println!("Dockerfile generated at: {}", self.project_path),
@@ -48,7 +50,21 @@ impl Generator for NodeGenerator<'_> {
         }
     }
 
-    fn find_images(&self) -> Vec<String> {
-        vec![String::new()]
+    fn find_images(&self) -> HashMap<String, String> {
+        let mut images: HashMap<String, String> = HashMap::new();
+
+        for (key, value) in self.package.data()["dependencies"].as_object().unwrap().iter() {
+            let image = match key.as_str() {
+                "ioredis" | "redis" => Some("redis".to_owned()),
+                "mongodb" | "mongoose" => Some("mongodb".to_owned()),
+                _ => None
+            };
+
+            if let Some(image) = image {
+                images.insert(image, value.to_string());
+            }
+        }
+
+        images
     }
 }

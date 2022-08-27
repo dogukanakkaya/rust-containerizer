@@ -47,6 +47,8 @@ impl Decider {
             },
             _ => unimplemented!()
         };
+
+        println!("images: {:?}", images);
     }
 
     pub fn driver_options(&self) -> &HashMap<String, String> {
