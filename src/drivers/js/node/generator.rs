@@ -15,6 +15,10 @@ impl<'a> NodeGenerator<'a> {
         }
     }
 
+    fn dependencies(&self) -> &serde_json::Map<String, serde_json::Value>{
+        self.package.data()["dependencies"].as_object().unwrap()
+    }
+
     fn generate_package(&self) -> String {
         let node_version = self.package.data()["engines"]["node"]
             .as_str()
@@ -23,16 +27,34 @@ impl<'a> NodeGenerator<'a> {
             .filter(|x| !vec!['<', '>', '=', '^', '~'].contains(x))
             .collect::<String>();
 
+        let mut os_packages = vec![];
+
+        for (key, value) in self.dependencies().iter() {
+            let os_package = match key.as_str() {
+                "@grpc/grpc-js" | "@grpc/proto-loader" => Some("libprotobuf-dev protobuf-compiler".to_owned()),
+                _ => None
+            };
+
+            if let Some(os_package) = os_package {
+                if !os_packages.contains(&os_package) {
+                    os_packages.push(os_package);
+                }
+            }
+        }
+
         // find node version from package.json or somehow if can't be found by package.json
         format!(
             "
-            FROM node:{}-alpine
+            FROM node:{}
             WORKDIR /app
+            RUN apt-get update
+            RUN apt-get install -y {}
             COPY package*.json tsconfig.json ./
             RUN npm i
             COPY . .
             ",
-            node_version
+            node_version,
+            os_packages.join(" ")
         )
     }
 }
@@ -53,7 +75,7 @@ impl Generator for NodeGenerator<'_> {
     fn find_images(&self) -> HashMap<String, String> {
         let mut images: HashMap<String, String> = HashMap::new();
 
-        for (key, value) in self.package.data()["dependencies"].as_object().unwrap().iter() {
+        for (key, value) in self.dependencies().iter() {
             let image = match key.as_str() {
                 "ioredis" | "redis" => Some("redis".to_owned()),
                 "mongodb" | "mongoose" => Some("mongodb".to_owned()),
