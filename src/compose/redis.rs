@@ -1,10 +1,27 @@
-use super::composer::Composer;
-use crate::drivers::js::package::Package;
-use crate::traits::generator::Generator;
-use std::{fs::File, io::Write};
+use crate::traits::compose::Compose;
+use serde_json::json;
+use std::collections::HashMap;
 
 pub struct Redis {}
 
-impl Generator for Redis {
-    fn generate(project_path: &String) {}
+impl Redis {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl Compose for Redis {
+    fn find_compose_definition(&self) -> HashMap<&str, serde_json::Value> {
+        HashMap::from([(
+            "services",
+            json!({
+                "redis": {
+                    "image": "redis",
+                    "volumes": [
+                        "redis_data:/data",
+                    ]
+                }
+            }),
+        )])
+    }
 }

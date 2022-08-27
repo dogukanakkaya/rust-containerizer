@@ -1,6 +1,9 @@
+use crate::compose::mongodb::MongoDB;
+use crate::compose::redis::Redis;
 use crate::drivers::driver::Driver;
 use crate::drivers::js::generator::JSGenerator;
 use crate::drivers::php::generator::PHPGenerator;
+use crate::images::image::Image;
 use crate::traits::{compose::Compose, generator::Generator};
 use dotenv;
 use serde_json::json;
@@ -46,21 +49,36 @@ impl Context {
         let (images, _) = match driver {
             Driver::PHP => {
                 let generator = PHPGenerator::new(self.driver_options.clone());
+                
                 generator.generate();
 
                 (generator.find_images(), 1)
             }
             Driver::JS => {
                 let generator = JSGenerator::new(self.driver_options.clone());
-                generator.generate();
 
-                let compose_definition = generator.find_compose_definition();
-                JSGenerator::add_to_compose(compose_definition, &mut docker_compose_contents);
+                generator.generate();
+                generator.add_to_compose(&mut docker_compose_contents);
 
                 (generator.find_images(), 1)
             }
             _ => unimplemented!(),
         };
+
+        for (image, _) in images {
+            match image.parse::<Image>().unwrap() {
+                Image::Redis => {
+                    let redis = Redis::new();
+
+                    redis.add_to_compose(&mut docker_compose_contents);
+                }
+                Image::MongoDB => {
+                    let mongodb = MongoDB::new();
+
+                    mongodb.add_to_compose(&mut docker_compose_contents);
+                }
+            }
+        }
 
         let yaml = serde_yaml::to_string::<serde_json::Value>(&docker_compose_contents).unwrap();
 
