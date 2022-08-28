@@ -1,8 +1,8 @@
 # Dockerize your existing application
 
-i did not complete this (maybe i'll continue in the future)
-
 ### Run: 
 ```
-cargo run -- --driver=php --framework=symfony --path=test-symfony-app
+cargo run -- --driver=php --path=test-symfony-app
+cargo run -- --driver=js --path=test-js-app
+cargo run -- --driver=js --path=test-js-app --compose=false
 ```

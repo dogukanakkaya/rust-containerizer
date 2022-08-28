@@ -64,7 +64,8 @@ impl Context {
                 .expect("docker-compose.yaml can't be created.");
             let mut docker_compose_contents = json!({
                 "version": "3.8",
-                "services": { }
+                "services": {},
+                "volumes": {}
             });
 
             generator.add_to_compose(&mut docker_compose_contents);

@@ -12,16 +12,24 @@ impl Redis {
 
 impl Compose for Redis {
     fn find_compose_definition(&self) -> HashMap<&str, serde_json::Value> {
-        HashMap::from([(
-            "services",
-            json!({
-                "redis": {
-                    "image": "redis",
-                    "volumes": [
-                        "redis_data:/data",
-                    ]
-                }
-            }),
-        )])
+        HashMap::from([
+            (
+                "services",
+                json!({
+                    "redis": {
+                        "image": "redis",
+                        "volumes": [
+                            "redis_data:/data",
+                        ]
+                    }
+                }),
+            ),
+            (
+                "volumes",
+                json!({
+                    "redis_data": ""
+                }),
+            ),
+        ])
     }
 }

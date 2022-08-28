@@ -1,15 +1,15 @@
-use std::str::FromStr;
-
-use crate::context::Image as ImageTrait;
-
-use self::{redis::Redis, mongodb::MongoDB};
-
+pub mod elasticsearch;
 pub mod mongodb;
 pub mod redis;
+
+use self::{elasticsearch::Elasticsearch, mongodb::MongoDB, redis::Redis};
+use crate::context::Image as ImageTrait;
+use std::str::FromStr;
 
 pub enum Image {
     Redis,
     MongoDB,
+    Elasticsearch,
 }
 
 impl FromStr for Image {
@@ -19,6 +19,7 @@ impl FromStr for Image {
         match s {
             "redis" => Ok(Self::Redis),
             "mongodb" => Ok(Self::MongoDB),
+            "elasticsearch" => Ok(Self::Elasticsearch),
             _ => Err(String::from(format!("Image {} is not implemented yet.", s))),
         }
     }
@@ -38,6 +39,7 @@ impl Image {
         match self {
             Self::Redis => Box::new(Redis::new()),
             Self::MongoDB => Box::new(MongoDB::new()),
+            Self::Elasticsearch => Box::new(Elasticsearch::new()),
         }
     }
 }

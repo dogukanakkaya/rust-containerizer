@@ -1,5 +1,5 @@
 use crate::drivers::DriverGenerator;
-use crate::os::os::Os;
+// use crate::os::os::Os;
 use crate::{compose::Compose, drivers::js::package::Package};
 use serde_json::json;
 use std::{collections::HashMap, fs::File, io::Write};
@@ -95,9 +95,11 @@ impl DriverGenerator for JSGenerator {
         let mut images: HashMap<String, String> = HashMap::new();
 
         for (key, value) in self.dependencies().iter() {
+            // @TODO: match with regex or something else instead of hard coded strings
             let image = match key.as_str() {
                 "ioredis" | "redis" => Some("redis".to_owned()),
                 "mongodb" | "mongoose" => Some("mongodb".to_owned()),
+                "@elastic/elasticsearch" => Some("elasticsearch".to_owned()),
                 _ => None,
             };
 

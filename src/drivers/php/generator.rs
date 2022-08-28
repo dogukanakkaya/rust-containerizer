@@ -23,6 +23,10 @@ impl PHPGenerator {
         }
     }
 
+    fn dependencies(&self) -> &serde_json::Map<String, serde_json::Value> {
+        self.composer.data()["require"].as_object().unwrap()
+    }
+
     fn find_extensions(&self) -> Vec<&str> {
         let mut extensions = vec![];
 
@@ -95,6 +99,20 @@ impl DriverGenerator for PHPGenerator {
 
     fn find_images(&self) -> HashMap<String, String> {
         let mut images: HashMap<String, String> = HashMap::new();
+
+        for (key, value) in self.dependencies().iter() {
+            // @TODO: match with regex or something else instead of hard coded strings
+            let image = match key.as_str() {
+                "phpredis/phpredis" | "predis/predis" => Some("redis".to_owned()),
+                "mongodb" | "mongoose" => Some("mongodb".to_owned()),
+                "elasticsearch/elasticsearch" => Some("elasticsearch".to_owned()),
+                _ => None,
+            };
+
+            if let Some(image) = image {
+                images.insert(image, value.to_string());
+            }
+        }
 
         images
     }
