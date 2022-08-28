@@ -52,7 +52,12 @@ impl Context {
 
         generator.generate();
 
+        // @TODO: refactor the folder structure, move traits to appropriate folders
+        // remove non-modules folders and move to appropriate folders (like os)
+        // refactor namings of enums, traits they are overlapping
+
         if compose == "true" {
+            // @TODO: move creation of compose to compose module
             let mut docker_compose = File::create(format!("{}/docker-compose.yaml", project_path))
                 .expect("docker-compose.yaml can't be created.");
             let mut docker_compose_contents = json!({
