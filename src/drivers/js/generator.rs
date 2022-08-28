@@ -98,7 +98,7 @@ impl DriverGenerator for JSGenerator {
             // @TODO: match with regex or something else instead of hard coded strings
             let image = match key.as_str() {
                 "ioredis" | "redis" => Some("redis".to_owned()),
-                "mongodb" | "mongoose" => Some("mongodb".to_owned()),
+                "mongodb" | "mongoose" => Some("mongo".to_owned()),
                 "@elastic/elasticsearch" => Some("elasticsearch".to_owned()),
                 _ => None,
             };

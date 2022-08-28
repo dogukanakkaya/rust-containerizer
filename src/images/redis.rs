@@ -18,6 +18,9 @@ impl Compose for Redis {
                 json!({
                     "redis": {
                         "image": "redis",
+                        "ports": [
+                            "6379:6379"
+                        ],
                         "volumes": [
                             "redis_data:/data",
                         ]
@@ -27,7 +30,7 @@ impl Compose for Redis {
             (
                 "volumes",
                 json!({
-                    "redis_data": ""
+                    "redis_data": {}
                 }),
             ),
         ])

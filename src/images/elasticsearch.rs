@@ -18,6 +18,9 @@ impl Compose for Elasticsearch {
                 json!({
                         "elasticsearch": {
                             "image": "elasticsearch",
+                            "ports": [
+                                "9200:9200"
+                            ],
                             "volumes": [
                                 "es_data:/usr/share/elasticsearch/data",
                             ],
@@ -30,7 +33,7 @@ impl Compose for Elasticsearch {
             (
                 "volumes",
                 json!({
-                    "es_data": ""
+                    "es_data": {}
                 }),
             ),
         ])

@@ -2,22 +2,25 @@ use crate::compose::Compose;
 use serde_json::json;
 use std::collections::HashMap;
 
-pub struct MongoDB {}
+pub struct Mongo {}
 
-impl MongoDB {
+impl Mongo {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl Compose for MongoDB {
+impl Compose for Mongo {
     fn find_compose_definition(&self) -> HashMap<&str, serde_json::Value> {
         HashMap::from([
             (
                 "services",
                 json!({
-                    "mongodb": {
-                        "image": "mongodb",
+                    "mongo": {
+                        "image": "mongo",
+                        "ports": [
+                            "27017:27017"
+                        ],
                         "volumes": [
                             "mongo_data:/data/db",
                         ],
@@ -31,7 +34,7 @@ impl Compose for MongoDB {
             (
                 "volumes",
                 json!({
-                    "mongo_data": ""
+                    "mongo_data": {}
                 }),
             ),
         ])
