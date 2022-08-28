@@ -40,3 +40,4 @@ cargo run -- --driver=js --path=examples/test-js-app --compose=false
 - [ ] Make Alpine OS available.
 - [ ] Research for how to collect more information about definitions (check
       .env, language's or framework's configuration files etc.)
+- [ ] Add CI generation option
