@@ -5,7 +5,7 @@ use crate::drivers::js::generator::JSGenerator;
 use crate::drivers::php::generator::PHPGenerator;
 use crate::images::image::Image;
 use crate::traits::compose::Compose;
-use crate::traits::Generator;
+use crate::traits::{Generator, Image as ImageTrait};
 use dotenv;
 use serde_json::json;
 use std::collections::HashMap;
@@ -63,18 +63,12 @@ impl Context {
             generator.add_to_compose(&mut docker_compose_contents);
 
             for (image, _) in generator.find_images() {
-                match image.parse::<Image>().unwrap() {
-                    Image::Redis => {
-                        let redis = Redis::new();
+                let image: Box<dyn ImageTrait> = match image.parse::<Image>().unwrap() {
+                    Image::Redis => Box::new(Redis::new()),
+                    Image::MongoDB => Box::new(MongoDB::new()),
+                };
 
-                        redis.add_to_compose(&mut docker_compose_contents);
-                    }
-                    Image::MongoDB => {
-                        let mongodb = MongoDB::new();
-
-                        mongodb.add_to_compose(&mut docker_compose_contents);
-                    }
-                }
+                image.add_to_compose(&mut docker_compose_contents);
             }
 
             let yaml =
