@@ -1,6 +1,6 @@
 pub mod compose;
-pub mod generator;
-use self::{compose::Compose, generator::Generator};
+pub mod driver;
+use self::{compose::Compose, driver::Driver};
 
-pub trait Driver: Generator + Compose {}
-impl<T: Generator + Compose> Driver for T {}
+pub trait Generator: Driver + Compose {}
+impl<T: Driver + Compose> Generator for T {}

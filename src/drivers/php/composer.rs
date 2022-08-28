@@ -1,6 +1,5 @@
-use std::fs;
-
 use serde_json::Value;
+use std::fs;
 
 pub struct Composer {
     data: Value,

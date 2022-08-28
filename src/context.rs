@@ -4,8 +4,8 @@ use crate::drivers::driver::Driver;
 use crate::drivers::js::generator::JSGenerator;
 use crate::drivers::php::generator::PHPGenerator;
 use crate::images::image::Image;
-use crate::traits::Driver as DriverTrait;
-use crate::traits::{compose::Compose, generator::Generator};
+use crate::traits::compose::Compose;
+use crate::traits::Generator;
 use dotenv;
 use serde_json::json;
 use std::collections::HashMap;
@@ -45,7 +45,7 @@ impl Context {
         dotenv::from_filename(format!("{}/.env", project_path))
             .expect(&format!(".env file is not exists in path {}", project_path));
 
-        let generator: Box<dyn DriverTrait> = match driver {
+        let generator: Box<dyn Generator> = match driver {
             Driver::PHP => Box::new(PHPGenerator::new(self.driver_options.clone())),
             Driver::JS => Box::new(JSGenerator::new(self.driver_options.clone())),
         };

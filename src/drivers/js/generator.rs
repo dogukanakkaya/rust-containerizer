@@ -1,6 +1,6 @@
 use crate::drivers::js::package::Package;
 use crate::os::os::Os;
-use crate::traits::{compose::Compose, generator::Generator};
+use crate::traits::{compose::Compose, driver::Driver};
 use serde_json::json;
 use std::{collections::HashMap, fs::File, io::Write};
 
@@ -56,7 +56,7 @@ impl JSGenerator {
     }
 }
 
-impl Generator for JSGenerator {
+impl Driver for JSGenerator {
     fn generate(&self) {
         let project_path = self.driver_options.get("path").unwrap();
 

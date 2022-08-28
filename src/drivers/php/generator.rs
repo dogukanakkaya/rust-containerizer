@@ -1,8 +1,7 @@
-use serde_json::json;
-
 use super::composer::Composer;
-use crate::traits::generator::Generator;
+use crate::traits::driver::Driver;
 use crate::{drivers::js::package::Package, traits::compose::Compose};
+use serde_json::json;
 use std::{collections::HashMap, fs::File, io::Write};
 
 pub struct PHPGenerator {
@@ -35,7 +34,7 @@ impl PHPGenerator {
     }
 }
 
-impl Generator for PHPGenerator {
+impl Driver for PHPGenerator {
     fn generate(&self) {
         let project_path = self.driver_options.get("path").unwrap();
 
