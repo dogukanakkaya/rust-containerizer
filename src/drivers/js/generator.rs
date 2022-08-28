@@ -39,7 +39,7 @@ impl JSGenerator {
 
         for (key, _) in self.dependencies().iter() {
             let os_package = match key.as_str() {
-                "@grpc/grpc-js" | "@grpc/proto-loader" => {
+                "@grpc/grpc-js" | "@grpc/proto-loader" | "protobufjs" => {
                     Some("libprotobuf-dev protobuf-compiler".to_owned())
                 }
                 _ => None,

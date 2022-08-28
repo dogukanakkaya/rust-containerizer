@@ -1,4 +1,4 @@
-use super::Compose;
+use crate::compose::Compose;
 use serde_json::json;
 use std::collections::HashMap;
 

@@ -1,6 +1,3 @@
-pub mod mongodb;
-pub mod redis;
-
 use std::collections::HashMap;
 
 pub trait Compose {

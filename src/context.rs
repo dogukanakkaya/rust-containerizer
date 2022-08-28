@@ -1,10 +1,8 @@
-use crate::compose::mongodb::MongoDB;
-use crate::compose::redis::Redis;
 use crate::compose::Compose;
 use crate::drivers::js::generator::JSGenerator;
 use crate::drivers::php::generator::PHPGenerator;
 use crate::drivers::{Driver, DriverGenerator};
-use crate::images::image::Image as ImageEnum;
+use crate::images::Image as ImageEnum;
 use dotenv;
 use serde_json::json;
 use std::collections::HashMap;
@@ -72,10 +70,7 @@ impl Context {
             generator.add_to_compose(&mut docker_compose_contents);
 
             for (image, _) in generator.find_images() {
-                let image: Box<dyn Image> = match image.parse::<ImageEnum>().unwrap() {
-                    ImageEnum::Redis => Box::new(Redis::new()),
-                    ImageEnum::MongoDB => Box::new(MongoDB::new()),
-                };
+                let image = image.parse::<ImageEnum>().unwrap().to_image();
 
                 image.add_to_compose(&mut docker_compose_contents);
             }
