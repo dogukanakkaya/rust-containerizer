@@ -38,6 +38,26 @@ impl PHPGenerator {
 
         extensions
     }
+
+    // @TODO: implement creation .dockerignore
+//     fn ignore() {
+//         "
+// ##> Docker <##
+// Dockerfile
+// .dockerignore
+// docker-compose*
+// ##/> Docker <##
+
+// ##> VCS <##
+// .git
+// .gitignore
+// ##/> VCS <##
+
+// ##> App <##
+// node_modules
+// ##/> App <##
+//         ";
+//     }
 }
 
 impl DriverGenerator for PHPGenerator {

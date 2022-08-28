@@ -1,4 +1,4 @@
 /target
-test-*-app
+/examples/test-*-app
 .DS_Store
 .idea
