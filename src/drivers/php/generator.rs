@@ -70,6 +70,8 @@ impl DriverGenerator for PHPGenerator {
                     "
                 RUN curl -fsSL https://deb.nodesource.com/setup_{}.x | bash -
                 RUN apt-get install -y nodejs
+                COPY composer.json composer.lock symfony.lock ./
+                RUN composer install
                 COPY package*.json .
                 RUN npm i
                 ",
@@ -77,19 +79,15 @@ impl DriverGenerator for PHPGenerator {
                 )
                 .as_str(),
             ),
-            _ => (),
-        }
-
-        dockerfile_contents.push_str(
-            format!(
+            _ => dockerfile_contents.push_str(
                 "
             COPY composer.json composer.lock symfony.lock ./
             RUN composer install
-            COPY . .
-            "
-            )
-            .as_str(),
-        );
+            ",
+            ),
+        }
+
+        dockerfile_contents.push_str("COPY . .");
 
         match dockerfile.write_all(dockerfile_contents.as_bytes()) {
             Ok(()) => println!("Dockerfile generated at: {}", project_path),

@@ -24,7 +24,7 @@ impl Package {
     pub fn find_node_version(&self) -> String {
         self.data["engines"]["node"]
             .as_str()
-            .unwrap_or("16")
+            .unwrap_or("18")
             .chars()
             .filter(|x| !vec!['<', '>', '=', '^', '~'].contains(x))
             .collect::<String>()
