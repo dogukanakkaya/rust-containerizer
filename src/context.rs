@@ -1,16 +1,21 @@
 use crate::compose::mongodb::MongoDB;
 use crate::compose::redis::Redis;
-use crate::drivers::driver::Driver;
+use crate::compose::Compose;
 use crate::drivers::js::generator::JSGenerator;
 use crate::drivers::php::generator::PHPGenerator;
-use crate::images::image::Image;
-use crate::traits::compose::Compose;
-use crate::traits::{Generator, Image as ImageTrait};
+use crate::drivers::{Driver, DriverGenerator};
+use crate::images::image::Image as ImageEnum;
 use dotenv;
 use serde_json::json;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
+
+pub trait Generator: DriverGenerator + Compose {}
+impl<T: DriverGenerator + Compose> Generator for T {}
+
+pub trait Image: Compose {}
+impl<T: Compose> Image for T {}
 
 #[derive(Debug)]
 pub struct Context {
@@ -52,8 +57,7 @@ impl Context {
 
         generator.generate();
 
-        // @TODO: refactor the folder structure, move traits to appropriate folders
-        // remove non-modules folders and move to appropriate folders (like os)
+        // @TODO: remove non-modules folders and move to appropriate folders (like os)
         // refactor namings of enums, traits they are overlapping
 
         if compose == "true" {
@@ -68,9 +72,9 @@ impl Context {
             generator.add_to_compose(&mut docker_compose_contents);
 
             for (image, _) in generator.find_images() {
-                let image: Box<dyn ImageTrait> = match image.parse::<Image>().unwrap() {
-                    Image::Redis => Box::new(Redis::new()),
-                    Image::MongoDB => Box::new(MongoDB::new()),
+                let image: Box<dyn Image> = match image.parse::<ImageEnum>().unwrap() {
+                    ImageEnum::Redis => Box::new(Redis::new()),
+                    ImageEnum::MongoDB => Box::new(MongoDB::new()),
                 };
 
                 image.add_to_compose(&mut docker_compose_contents);

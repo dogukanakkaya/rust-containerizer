@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use super::Compose;
 use serde_json::json;
-use crate::traits::compose::Compose;
+use std::collections::HashMap;
 
 pub struct MongoDB {}
 

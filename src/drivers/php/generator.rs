@@ -1,6 +1,8 @@
 use super::composer::Composer;
-use crate::traits::driver::Driver;
-use crate::{drivers::js::package::Package, traits::compose::Compose};
+use crate::{
+    compose::Compose,
+    drivers::{js::package::Package, DriverGenerator},
+};
 use serde_json::json;
 use std::{collections::HashMap, fs::File, io::Write};
 
@@ -34,7 +36,7 @@ impl PHPGenerator {
     }
 }
 
-impl Driver for PHPGenerator {
+impl DriverGenerator for PHPGenerator {
     fn generate(&self) {
         let project_path = self.driver_options.get("path").unwrap();
 

@@ -3,7 +3,6 @@ mod context;
 mod drivers;
 mod images;
 mod os;
-mod traits;
 
 use context::Context;
 use std::collections::HashMap;
