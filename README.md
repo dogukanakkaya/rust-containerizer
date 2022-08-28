@@ -24,7 +24,7 @@ See available drivers, images etc.
 ```
 cargo run -- --driver=php --path=examples/test-php-app
 cargo run -- --driver=js --path=examples/test-js-app
-cargo run -- --driver=js --path=examples/test-js-app --compose=false
+cargo run -- --driver=js --path=examples/test-js-app --no-compose
 ```
 
 ## Todo

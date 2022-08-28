@@ -7,19 +7,19 @@ use serde_json::json;
 use std::{collections::HashMap, fs::File, io::Write};
 
 pub struct PHPGenerator {
-    driver_options: HashMap<String, String>,
+    options: HashMap<String, String>,
     composer: Composer,
     package: Result<Package, String>,
 }
 
 impl PHPGenerator {
-    pub fn new(driver_options: HashMap<String, String>) -> Self {
-        let project_path = driver_options.get("path").unwrap();
+    pub fn new(options: HashMap<String, String>) -> Self {
+        let project_path = options.get("path").unwrap();
 
         Self {
             composer: Composer::new(format!("{}/composer.json", project_path)).unwrap(),
             package: Package::new(format!("{}/package.json", project_path)),
-            driver_options,
+            options,
         }
     }
 
@@ -62,7 +62,7 @@ impl PHPGenerator {
 
 impl DriverGenerator for PHPGenerator {
     fn generate(&self) {
-        let project_path = self.driver_options.get("path").unwrap();
+        let project_path = self.options.get("path").unwrap();
 
         let mut dockerfile = File::create(format!("{}/Dockerfile", project_path))
             .expect("Dockerfile can't be created.");
@@ -138,7 +138,7 @@ impl DriverGenerator for PHPGenerator {
 
 impl Compose for PHPGenerator {
     fn find_compose_definition(&self) -> HashMap<&str, serde_json::Value> {
-        let project_path = self.driver_options.get("path").unwrap();
+        let project_path = self.options.get("path").unwrap();
         let images = &self.find_images();
         let depends_on = images.keys().collect::<Vec<&String>>();
 

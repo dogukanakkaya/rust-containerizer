@@ -17,30 +17,25 @@ impl<T: Compose> Image for T {}
 
 #[derive(Debug)]
 pub struct Context {
-    driver_options: HashMap<String, String>,
+    options: HashMap<String, String>,
 }
 
 impl From<HashMap<String, String>> for Context {
-    fn from(driver_options: HashMap<String, String>) -> Self {
-        Self { driver_options }
+    fn from(options: HashMap<String, String>) -> Self {
+        Self { options }
     }
 }
 
 impl Context {
     pub fn exec(self) {
         let driver = self
-            .driver_options
+            .options
             .get("driver")
             .expect("Option driver is missing. Did you forget to add --driver option?")
             .parse::<Driver>()
             .unwrap();
-        let compose = self
-            .driver_options
-            .get("compose")
-            .unwrap_or(&"true".to_owned())
-            .to_owned();
         let project_path = self
-            .driver_options
+            .options
             .get("path")
             .expect("Option path is missing. Did you forget to add --path option?");
 
@@ -49,17 +44,13 @@ impl Context {
             .expect(&format!(".env file is not exists in path {}", project_path));
 
         let generator: Box<dyn Generator> = match driver {
-            Driver::PHP => Box::new(PHPGenerator::new(self.driver_options.clone())),
-            Driver::JS => Box::new(JSGenerator::new(self.driver_options.clone())),
+            Driver::PHP => Box::new(PHPGenerator::new(self.options.clone())),
+            Driver::JS => Box::new(JSGenerator::new(self.options.clone())),
         };
 
         generator.generate();
 
-        // @TODO: remove non-modules folders and move to appropriate folders (like os)
-        // refactor namings of enums, traits they are overlapping
-
-        if compose == "true" {
-            // @TODO: move creation of compose to compose module
+        if self.options.get("no-compose").is_none() {
             let mut docker_compose = File::create(format!("{}/docker-compose.yaml", project_path))
                 .expect("docker-compose.yaml can't be created.");
             let mut docker_compose_contents = json!({
