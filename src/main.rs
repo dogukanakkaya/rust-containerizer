@@ -16,7 +16,7 @@ fn main() {
         if arg.starts_with("--") {
             match arg.find('=') {
                 Some(i) => driver_options.insert(arg[2..i].to_string(), arg[i + 1..].to_string()),
-                _ => None,
+                None => driver_options.insert(arg[2..].to_string(), "true".to_string()),
             };
         }
     }

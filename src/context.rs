@@ -4,6 +4,7 @@ use crate::drivers::driver::Driver;
 use crate::drivers::js::generator::JSGenerator;
 use crate::drivers::php::generator::PHPGenerator;
 use crate::images::image::Image;
+use crate::traits::Driver as DriverTrait;
 use crate::traits::{compose::Compose, generator::Generator};
 use dotenv;
 use serde_json::json;
@@ -30,6 +31,11 @@ impl Context {
             .expect("Option driver is missing. Did you forget to add --driver option?")
             .parse::<Driver>()
             .unwrap();
+        let compose = self
+            .driver_options
+            .get("compose")
+            .unwrap_or(&"true".to_owned())
+            .to_owned();
         let project_path = self
             .driver_options
             .get("path")
@@ -39,52 +45,45 @@ impl Context {
         dotenv::from_filename(format!("{}/.env", project_path))
             .expect(&format!(".env file is not exists in path {}", project_path));
 
-        let mut docker_compose = File::create(format!("{}/docker-compose.yaml", project_path))
-            .expect("docker-compose.yaml can't be created.");
-        let mut docker_compose_contents = json!({
-            "version": "3.8",
-            "services": { }
-        });
-
-        let (images, _) = match driver {
-            Driver::PHP => {
-                let generator = PHPGenerator::new(self.driver_options.clone());
-                
-                generator.generate();
-
-                (generator.find_images(), 1)
-            }
-            Driver::JS => {
-                let generator = JSGenerator::new(self.driver_options.clone());
-
-                generator.generate();
-                generator.add_to_compose(&mut docker_compose_contents);
-
-                (generator.find_images(), 1)
-            }
-            _ => unimplemented!(),
+        let generator: Box<dyn DriverTrait> = match driver {
+            Driver::PHP => Box::new(PHPGenerator::new(self.driver_options.clone())),
+            Driver::JS => Box::new(JSGenerator::new(self.driver_options.clone())),
         };
 
-        for (image, _) in images {
-            match image.parse::<Image>().unwrap() {
-                Image::Redis => {
-                    let redis = Redis::new();
+        generator.generate();
 
-                    redis.add_to_compose(&mut docker_compose_contents);
-                }
-                Image::MongoDB => {
-                    let mongodb = MongoDB::new();
+        if compose == "true" {
+            let mut docker_compose = File::create(format!("{}/docker-compose.yaml", project_path))
+                .expect("docker-compose.yaml can't be created.");
+            let mut docker_compose_contents = json!({
+                "version": "3.8",
+                "services": { }
+            });
 
-                    mongodb.add_to_compose(&mut docker_compose_contents);
+            generator.add_to_compose(&mut docker_compose_contents);
+
+            for (image, _) in generator.find_images() {
+                match image.parse::<Image>().unwrap() {
+                    Image::Redis => {
+                        let redis = Redis::new();
+
+                        redis.add_to_compose(&mut docker_compose_contents);
+                    }
+                    Image::MongoDB => {
+                        let mongodb = MongoDB::new();
+
+                        mongodb.add_to_compose(&mut docker_compose_contents);
+                    }
                 }
             }
-        }
 
-        let yaml = serde_yaml::to_string::<serde_json::Value>(&docker_compose_contents).unwrap();
+            let yaml =
+                serde_yaml::to_string::<serde_json::Value>(&docker_compose_contents).unwrap();
 
-        match docker_compose.write_all(yaml.as_bytes()) {
-            Ok(()) => println!("docker-compose.yaml generated at: {}", project_path),
-            Err(_) => unimplemented!(),
+            match docker_compose.write_all(yaml.as_bytes()) {
+                Ok(()) => println!("docker-compose.yaml generated at: {}", project_path),
+                Err(_) => unimplemented!(),
+            }
         }
     }
 }

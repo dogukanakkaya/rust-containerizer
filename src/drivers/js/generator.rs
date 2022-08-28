@@ -54,24 +54,6 @@ impl JSGenerator {
 
         os_packages
     }
-
-    pub fn find_images(&self) -> HashMap<String, String> {
-        let mut images: HashMap<String, String> = HashMap::new();
-
-        for (key, value) in self.dependencies().iter() {
-            let image = match key.as_str() {
-                "ioredis" | "redis" => Some("redis".to_owned()),
-                "mongodb" | "mongoose" => Some("mongodb".to_owned()),
-                _ => None,
-            };
-
-            if let Some(image) = image {
-                images.insert(image, value.to_string());
-            }
-        }
-
-        images
-    }
 }
 
 impl Generator for JSGenerator {
@@ -107,6 +89,24 @@ impl Generator for JSGenerator {
             Ok(()) => println!("Dockerfile generated at: {}", project_path),
             Err(_) => unimplemented!(),
         }
+    }
+
+    fn find_images(&self) -> HashMap<String, String> {
+        let mut images: HashMap<String, String> = HashMap::new();
+
+        for (key, value) in self.dependencies().iter() {
+            let image = match key.as_str() {
+                "ioredis" | "redis" => Some("redis".to_owned()),
+                "mongodb" | "mongoose" => Some("mongodb".to_owned()),
+                _ => None,
+            };
+
+            if let Some(image) = image {
+                images.insert(image, value.to_string());
+            }
+        }
+
+        images
     }
 }
 

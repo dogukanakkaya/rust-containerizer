@@ -1,6 +1,8 @@
+use serde_json::json;
+
 use super::composer::Composer;
-use crate::drivers::js::package::Package;
 use crate::traits::generator::Generator;
+use crate::{drivers::js::package::Package, traits::compose::Compose};
 use std::{collections::HashMap, fs::File, io::Write};
 
 pub struct PHPGenerator {
@@ -31,12 +33,6 @@ impl PHPGenerator {
 
         extensions
     }
-
-    pub fn find_images(&self) -> HashMap<String, String> {
-        let mut images: HashMap<String, String> = HashMap::new();
-
-        images
-    }
 }
 
 impl Generator for PHPGenerator {
@@ -51,7 +47,7 @@ impl Generator for PHPGenerator {
             format!(
                 "
             FROM php:{}-fpm
-            WORKDIR /var/www/php
+            WORKDIR /app
             RUN apt-get update && apt-get install -y g++ git
             RUN docker-php-ext-install {}
             ",
@@ -94,5 +90,38 @@ impl Generator for PHPGenerator {
             Ok(()) => println!("Dockerfile generated at: {}", project_path),
             Err(_) => unimplemented!(),
         }
+    }
+
+    fn find_images(&self) -> HashMap<String, String> {
+        let mut images: HashMap<String, String> = HashMap::new();
+
+        images
+    }
+}
+
+impl Compose for PHPGenerator {
+    fn find_compose_definition(&self) -> HashMap<&str, serde_json::Value> {
+        let project_path = self.driver_options.get("path").unwrap();
+        let images = &self.find_images();
+        let depends_on = images.keys().collect::<Vec<&String>>();
+
+        HashMap::from([(
+            "services",
+            json!({
+                "app": {
+                    "build": ".",
+                    "image": format!("{}-image", project_path),
+                    "volumes": [
+                        "./:/app",
+                        "/app/vendor"
+                    ],
+                    "ports": [
+                        "8000:8000"
+                    ],
+                    "env_file": "./.env",
+                    "depends_on": depends_on
+                }
+            }),
+        )])
     }
 }
