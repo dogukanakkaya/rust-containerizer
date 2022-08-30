@@ -26,5 +26,6 @@ impl FromStr for Driver {
 
 pub trait DriverGenerator {
     fn generate(&self);
+    fn add_to_ignore(&self, ignore: &mut String);
     fn find_images(&self) -> HashMap<String, String>;
 }

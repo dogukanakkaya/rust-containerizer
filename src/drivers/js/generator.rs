@@ -70,14 +70,13 @@ impl DriverGenerator for JSGenerator {
 
         dockerfile_contents.push_str(
             format!(
-                "
-            FROM node:{}
-            WORKDIR /app
-            RUN apt-get update
-            RUN apt-get install -y {}
-            COPY package*.json tsconfig.json ./
-            RUN npm i
-            COPY . .
+                "FROM node:{}
+WORKDIR /app
+RUN apt-get update
+RUN apt-get install -y {}
+COPY package*.json tsconfig.json ./
+RUN npm i
+COPY . .
             ",
                 version,
                 os_packages.join(" ")
@@ -89,6 +88,10 @@ impl DriverGenerator for JSGenerator {
             Ok(()) => println!("Dockerfile generated at: {}", project_path),
             Err(_) => unimplemented!(),
         }
+    }
+
+    fn add_to_ignore(&self, ignore: &mut String) {
+        ignore.push_str("\n\n# app\nnode_modules")
     }
 
     fn find_images(&self) -> HashMap<String, String> {

@@ -38,26 +38,6 @@ impl PHPGenerator {
 
         extensions
     }
-
-    // @TODO: implement creation .dockerignore
-//     fn ignore() {
-//         "
-// ##> Docker <##
-// Dockerfile
-// .dockerignore
-// docker-compose*
-// ##/> Docker <##
-
-// ##> VCS <##
-// .git
-// .gitignore
-// ##/> VCS <##
-
-// ##> App <##
-// node_modules
-// ##/> App <##
-//         ";
-//     }
 }
 
 impl DriverGenerator for PHPGenerator {
@@ -70,11 +50,10 @@ impl DriverGenerator for PHPGenerator {
 
         dockerfile_contents.push_str(
             format!(
-                "
-            FROM php:{}-fpm
-            WORKDIR /app
-            RUN apt-get update && apt-get install -y g++ git
-            RUN docker-php-ext-install {}
+                "FROM php:{}-fpm
+WORKDIR /app
+RUN apt-get update && apt-get install -y g++ git
+RUN docker-php-ext-install {}
             ",
                 self.composer.find_php_version(),
                 self.find_extensions().join(" ")
@@ -88,12 +67,12 @@ impl DriverGenerator for PHPGenerator {
             Ok(pck) => dockerfile_contents.push_str(
                 format!(
                     "
-                RUN curl -fsSL https://deb.nodesource.com/setup_{}.x | bash -
-                RUN apt-get install -y nodejs
-                COPY composer.json composer.lock symfony.lock ./
-                RUN composer install
-                COPY package*.json .
-                RUN npm i
+RUN curl -fsSL https://deb.nodesource.com/setup_{}.x | bash -
+RUN apt-get install -y nodejs
+COPY composer.json composer.lock symfony.lock ./
+RUN composer install
+COPY package*.json .
+RUN npm i
                 ",
                     pck.find_node_version()
                 )
@@ -101,8 +80,8 @@ impl DriverGenerator for PHPGenerator {
             ),
             _ => dockerfile_contents.push_str(
                 "
-            COPY composer.json composer.lock symfony.lock ./
-            RUN composer install
+COPY composer.json composer.lock symfony.lock ./
+RUN composer install
             ",
             ),
         }
@@ -113,6 +92,10 @@ impl DriverGenerator for PHPGenerator {
             Ok(()) => println!("Dockerfile generated at: {}", project_path),
             Err(_) => unimplemented!(),
         }
+    }
+
+    fn add_to_ignore(&self, ignore: &mut String) {
+        ignore.push_str("\n\n# app\nvendor")
     }
 
     fn find_images(&self) -> HashMap<String, String> {

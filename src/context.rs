@@ -55,6 +55,25 @@ impl Context {
 
         generator.generate();
 
+        if self.options.get("no-ignore").is_none() {
+            let mut dockerignore = File::create(format!("{}/.dockerignore", project_path))
+                .expect(".dockerignore can't be created.");
+            let mut dockerignore_contents = String::from("# container\nDockerfile\n.dockerignore");
+
+            if self.options.get("no-compose").is_none() {
+                dockerignore_contents.push_str("\ndocker-compose*");
+            }
+
+            dockerignore_contents.push_str("\n\n# vcs\n.git\n.gitignore");
+
+            generator.add_to_ignore(&mut dockerignore_contents);
+
+            match dockerignore.write_all(dockerignore_contents.as_bytes()) {
+                Ok(()) => println!(".dockerignore generated at: {}", project_path),
+                Err(_) => unimplemented!(),
+            }
+        }
+
         if self.options.get("no-compose").is_none() {
             let mut docker_compose = File::create(format!("{}/docker-compose.yaml", project_path))
                 .expect("docker-compose.yaml can't be created.");

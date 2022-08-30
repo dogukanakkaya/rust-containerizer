@@ -1,0 +1,11 @@
+# container
+Dockerfile
+.dockerignore
+docker-compose*
+
+# vcs
+.git
+.gitignore
+
+# app
+node_modules
