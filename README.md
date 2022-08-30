@@ -7,7 +7,17 @@ See available drivers, images etc.
 ### Drivers
 
 - JS
+  - prisma
+    - postgresql
+    - sqlite
+    - mysql
+    - mongodb
+  - mongodb | mongoose
+  - ioredis | redis
+  - elasticsearch
 - PHP
+  - phpredis/phpredis | predis/predis
+  - elasticsearch/elasticsearch
 
 ### Images
 
