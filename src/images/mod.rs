@@ -25,16 +25,6 @@ impl FromStr for Image {
     }
 }
 
-// impl From<Image> for Box<dyn ImageTrait> {
-//     fn from(image: Image) -> Self {
-//         match image {
-//             Image::Redis => Box::new(Redis::new()),
-//             Image::Mongo => Box::new(Mongo::new()),
-//         }
-//     }
-// }
-
-// @TODO: add versions later (packages for each language is not compatible with the image's versions, figure it out)
 impl Image {
     pub fn to_image(&self) -> Box<dyn ImageTrait> {
         match self {
