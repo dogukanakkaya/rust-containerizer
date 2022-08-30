@@ -42,7 +42,6 @@ impl DriverGenerator for PHPGenerator {
             // @TODO: match with regex or something else instead of hard coded strings
             match key.as_str() {
                 "phpredis/phpredis" | "predis/predis" => self.images.push("redis".to_owned()),
-                "mongodb" | "mongoose" => self.images.push("mongo".to_owned()),
                 "elasticsearch/elasticsearch" => self.images.push("elasticsearch".to_owned()),
                 _ => {}
             };
