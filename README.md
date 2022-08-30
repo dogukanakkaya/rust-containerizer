@@ -38,7 +38,7 @@ cargo run -- --driver=js --path=examples/test-js-app --no-ignore
 - [ ] Make Alpine OS available.
 - [ ] Generation of CI files
 
-## Refactor Todo
+## Refactor Todo
 
 - [ ] Maybe separate some parts of `collect` function to pieces. Not important for
       now but it will grow big.
