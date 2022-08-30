@@ -2,6 +2,7 @@ use crate::drivers::DriverGenerator;
 // use crate::os::os::Os;
 use crate::{compose::Compose, drivers::js::package::Package};
 use serde_json::json;
+use std::io::{BufReader, Read};
 use std::{collections::HashMap, fs::File, io::Write};
 
 pub struct JSGenerator {
@@ -21,6 +22,10 @@ impl JSGenerator {
 
     fn dependencies(&self) -> &serde_json::Map<String, serde_json::Value> {
         self.package.data()["dependencies"].as_object().unwrap()
+    }
+
+    fn dev_dependencies(&self) -> &serde_json::Map<String, serde_json::Value> {
+        self.package.data()["devDependencies"].as_object().unwrap()
     }
 
     fn find_os_packages(&self) -> Vec<String> {
@@ -97,8 +102,41 @@ COPY . .
     fn find_images(&self) -> HashMap<String, String> {
         let mut images: HashMap<String, String> = HashMap::new();
 
+        // @TODO: match with regex or something else instead of hard coded strings
+
+        for (key, value) in self.dev_dependencies().iter() {
+            let image = match key.as_str() {
+                "prisma" => {
+                    let prisma_schema = File::open(format!(
+                        "{}/prisma/schema.prisma",
+                        self.options.get("path").unwrap()
+                    )).expect("You have `prisma` in your devDependencies yet you don't have prisma/schema.prisma file.");
+
+                    let mut buf_reader = BufReader::new(prisma_schema);
+                    let mut contents = String::new();
+                    buf_reader.read_to_string(&mut contents).unwrap();
+
+                    let re = regex::Regex::new(r#"datasource db.*\n.*provider = "(.*)""#).unwrap();
+
+                    let captures = re.captures(&contents).expect("You have `prisma` in your devDependencies yet you don't have `datasource db` definition in schema.prisma file.");
+
+                    match &captures[1] {
+                        // "postgresql" | "mysql" => Some(captures[1].to_owned()),
+                        "mongodb" => Some("mongo".to_owned()),
+                        // "cockroachdb" => Some("cockroachdb/cockroach".to_owned()),
+                        // @TODO: for sqlite i have to add it to os packages
+                        _ => None,
+                    }
+                }
+                _ => None,
+            };
+
+            if let Some(image) = image {
+                images.insert(image, value.to_string());
+            }
+        }
+
         for (key, value) in self.dependencies().iter() {
-            // @TODO: match with regex or something else instead of hard coded strings
             let image = match key.as_str() {
                 "ioredis" | "redis" => Some("redis".to_owned()),
                 "mongodb" | "mongoose" => Some("mongo".to_owned()),
@@ -110,6 +148,8 @@ COPY . .
                 images.insert(image, value.to_string());
             }
         }
+
+        println!("{:?}", images);
 
         images
     }
