@@ -32,7 +32,7 @@ impl Package {
 
     // merge dependencies and devDependencies to single map
     pub fn all_dependencies(&self) -> HashMap<&String, &serde_json::Value> {
-        self.data()["dependencies"]
+        self.data["dependencies"]
             .as_object()
             .unwrap()
             .into_iter()

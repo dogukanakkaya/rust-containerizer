@@ -31,7 +31,7 @@ impl Composer {
     }
 
     pub fn all_dependencies(&self) -> HashMap<&String, &serde_json::Value> {
-        self.data()["require"]
+        self.data["require"]
             .as_object()
             .unwrap()
             .into_iter()
