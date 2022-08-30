@@ -1,5 +1,4 @@
 use crate::drivers::DriverGenerator;
-use crate::images::Image;
 // use crate::os::os::Os;
 use crate::{compose::Compose, drivers::js::package::Package};
 use serde_json::json;
@@ -113,7 +112,6 @@ COPY . .
 impl Compose for JSGenerator {
     fn find_compose_definition(&self) -> HashMap<&str, serde_json::Value> {
         let project_path = self.options.get("path").unwrap();
-        let depends_on = Image::filter_implemented_images(&self.images);
 
         HashMap::from([(
             "services",
@@ -129,7 +127,7 @@ impl Compose for JSGenerator {
                         "8000:8000"
                     ],
                     "env_file": "./.env",
-                    "depends_on": depends_on
+                    "depends_on": self.images
                 }
             }),
         )])

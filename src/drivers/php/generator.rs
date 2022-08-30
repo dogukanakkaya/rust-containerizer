@@ -2,7 +2,6 @@ use super::composer::Composer;
 use crate::{
     compose::Compose,
     drivers::{js::package::Package, DriverGenerator},
-    images::Image,
 };
 use serde_json::json;
 use std::{collections::HashMap, fs::File, io::Write};
@@ -119,7 +118,6 @@ RUN composer install
 impl Compose for PHPGenerator {
     fn find_compose_definition(&self) -> HashMap<&str, serde_json::Value> {
         let project_path = self.options.get("path").unwrap();
-        let depends_on = Image::filter_implemented_images(&self.images);
 
         HashMap::from([(
             "services",
@@ -135,7 +133,7 @@ impl Compose for PHPGenerator {
                         "8000:8000"
                     ],
                     "env_file": "./.env",
-                    "depends_on": depends_on
+                    "depends_on": self.images
                 }
             }),
         )])

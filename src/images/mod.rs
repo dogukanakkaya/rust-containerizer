@@ -1,8 +1,12 @@
-pub mod elasticsearch;
-pub mod mongo;
-pub mod redis;
+mod elasticsearch;
+mod mongo;
+mod mysql;
+mod postgresql;
+mod redis;
 
-use self::{elasticsearch::Elasticsearch, mongo::Mongo, redis::Redis};
+use self::{
+    elasticsearch::Elasticsearch, mongo::Mongo, mysql::MySQL, postgresql::PostgreSQL, redis::Redis,
+};
 use crate::context::Image as ImageTrait;
 use std::str::FromStr;
 
@@ -10,6 +14,8 @@ pub enum Image {
     Redis,
     Mongo,
     Elasticsearch,
+    MySQL,
+    PostgreSQL,
 }
 
 impl FromStr for Image {
@@ -20,6 +26,8 @@ impl FromStr for Image {
             "redis" => Ok(Self::Redis),
             "mongo" => Ok(Self::Mongo),
             "elasticsearch" => Ok(Self::Elasticsearch),
+            "mysql" => Ok(Self::MySQL),
+            "postgresql" => Ok(Self::PostgreSQL),
             _ => Err(String::from(format!("Image {} is not implemented yet.", s))),
         }
     }
@@ -31,18 +39,8 @@ impl Image {
             Self::Redis => Box::new(Redis::new()),
             Self::Mongo => Box::new(Mongo::new()),
             Self::Elasticsearch => Box::new(Elasticsearch::new()),
+            Self::MySQL => Box::new(MySQL::new()),
+            Self::PostgreSQL => Box::new(PostgreSQL::new()),
         }
-    }
-
-    pub fn filter_implemented_images(images: &Vec<String>) -> Vec<&String> {
-        let mut implemented_images = vec![];
-
-        for image in images {
-            if let Ok(_) = image.parse::<Self>() {
-                implemented_images.push(image);
-            }
-        }
-
-        implemented_images
     }
 }

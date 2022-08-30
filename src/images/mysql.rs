@@ -2,32 +2,33 @@ use crate::compose::Compose;
 use serde_json::json;
 use std::collections::HashMap;
 
-pub struct Mongo {}
+pub struct MySQL {}
 
-impl Mongo {
+impl MySQL {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl Compose for Mongo {
+impl Compose for MySQL {
     fn find_compose_definition(&self) -> HashMap<&str, serde_json::Value> {
         HashMap::from([
             (
                 "services",
                 json!({
-                    "mongo": {
-                        "image": "mongo",
+                    "mysql": {
+                        "image": "mysql",
                         "ports": [
-                            "27017:27017"
+                            "3306:3306"
                         ],
                         "volumes": [
-                            "mongo_data:/data/db",
+                            "mysql_data:/var/lib/mysql",
                         ],
                         "environment": [
-                            "MONGO_INITDB_ROOT_USERNAME=root",
-                            "MONGO_INITDB_ROOT_PASSWORD=123456"
+                            "MYSQL_DATABASE=${DATABASE_NAME}",
+                            "MYSQL_ROOT_PASSWORD=${DATABASE_ROOT_PASSWORD}"
                         ],
+                        "command": "--default-authentication-plugin=mysql_native_password // do not use in production",
                         "restart": "always"
                     }
                 }),
@@ -35,7 +36,7 @@ impl Compose for Mongo {
             (
                 "volumes",
                 json!({
-                    "mongo_data": {}
+                    "mysql_data": {}
                 }),
             ),
         ])

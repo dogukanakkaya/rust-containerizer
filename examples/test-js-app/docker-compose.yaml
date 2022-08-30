@@ -12,6 +12,7 @@ services:
     depends_on:
     - redis
     - mongo
+    - postgresql
   redis:
     image: redis
     ports:
@@ -27,6 +28,19 @@ services:
     environment:
     - MONGO_INITDB_ROOT_USERNAME=root
     - MONGO_INITDB_ROOT_PASSWORD=123456
+    restart: always
+  postgresql:
+    image: postgres
+    ports:
+    - 5432:5432
+    volumes:
+    - postgresql_data:/var/lib/postgresql/data
+    environment:
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+    - POSTGRES_HOST_AUTH_METHOD=trust // do not use in production
+    restart: always
 volumes:
   redis_data: {}
   mongo_data: {}
+  postgresql_data: {}

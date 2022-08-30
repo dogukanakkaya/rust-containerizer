@@ -2,31 +2,32 @@ use crate::compose::Compose;
 use serde_json::json;
 use std::collections::HashMap;
 
-pub struct Mongo {}
+pub struct PostgreSQL {}
 
-impl Mongo {
+impl PostgreSQL {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl Compose for Mongo {
+impl Compose for PostgreSQL {
     fn find_compose_definition(&self) -> HashMap<&str, serde_json::Value> {
         HashMap::from([
             (
                 "services",
                 json!({
-                    "mongo": {
-                        "image": "mongo",
+                    "postgresql": {
+                        "image": "postgres",
                         "ports": [
-                            "27017:27017"
+                            "5432:5432"
                         ],
                         "volumes": [
-                            "mongo_data:/data/db",
+                            "postgresql_data:/var/lib/postgresql/data",
                         ],
                         "environment": [
-                            "MONGO_INITDB_ROOT_USERNAME=root",
-                            "MONGO_INITDB_ROOT_PASSWORD=123456"
+                            "POSTGRES_USER=postgres",
+                            "POSTGRES_PASSWORD=${DATABASE_PASSWORD}",
+                            "POSTGRES_HOST_AUTH_METHOD=trust // do not use in production"
                         ],
                         "restart": "always"
                     }
@@ -35,7 +36,7 @@ impl Compose for Mongo {
             (
                 "volumes",
                 json!({
-                    "mongo_data": {}
+                    "postgresql_data": {}
                 }),
             ),
         ])
