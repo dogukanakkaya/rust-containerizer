@@ -14,6 +14,8 @@ See available drivers, images etc.
 - Redis
 - Mongo
 - Elasticsearch
+- MySQL
+- PostgreSQL
 
 ### OS
 
@@ -30,15 +32,15 @@ cargo run -- --driver=js --path=examples/test-js-app --no-ignore
 
 ## Todo
 
-- [x] Add several available drivers (JS, PHP)
-- [x] Add several available images (Redis, Mongo, Elasticsearch)
-- [x] Add docker-compose generation option
 - [ ] Separation of docker-compose to prod, dev and test environments.
-- [x] Generation of .dockerignore file
-- [ ] Make more image available, mostly databases (PgSQL, MySQL etc.)
 - [ ] Generation of Kubernetes configuration files (deployments, persistent
       volumes etc.)
 - [ ] Make Alpine OS available.
-- [ ] Research for how to collect more information about definitions (check
-      .env, language's or framework's configuration files etc.)
-- [ ] Add CI generation option
+- [ ] Generation of CI files
+
+## Refactor Todo
+
+- [ ] Maybe separate some parts of `collect` function to pieces. Not important for
+      now but it will grow big.
+- [ ] Check if it makes sense to store `Vec<Image>` for images instead of
+      `Vec<String>`
