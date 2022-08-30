@@ -48,11 +48,12 @@ impl Context {
             _ => {}
         }
 
-        let generator: Box<dyn Generator> = match driver {
-            Driver::PHP => Box::new(PHPGenerator::new(self.options.clone())),
+        let mut generator: Box<dyn Generator> = match driver {
             Driver::JS => Box::new(JSGenerator::new(self.options.clone())),
+            Driver::PHP => Box::new(PHPGenerator::new(self.options.clone())),
         };
 
+        generator.collect();
         generator.generate();
 
         if self.options.get("no-ignore").is_none() {
@@ -85,10 +86,10 @@ impl Context {
 
             generator.add_to_compose(&mut docker_compose_contents);
 
-            for (image, _) in generator.find_images() {
-                let image = image.parse::<ImageEnum>().unwrap().to_image();
-
-                image.add_to_compose(&mut docker_compose_contents);
+            for image in generator.images() {
+                if let Ok(image) = image.parse::<ImageEnum>() {
+                    image.to_image().add_to_compose(&mut docker_compose_contents);
+                }
             }
 
             let yaml =

@@ -1,7 +1,6 @@
 pub mod js;
 pub mod php;
 
-use std::collections::HashMap;
 use std::str::FromStr;
 
 pub enum Driver {
@@ -25,7 +24,9 @@ impl FromStr for Driver {
 }
 
 pub trait DriverGenerator {
+    fn collect(&mut self);
     fn generate(&self);
     fn add_to_ignore(&self, ignore: &mut String);
-    fn find_images(&self) -> HashMap<String, String>;
+    fn images(&self) -> &Vec<String>;
+    fn os_packages(&self) -> &Vec<String>;
 }

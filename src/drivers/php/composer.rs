@@ -1,5 +1,5 @@
 use serde_json::Value;
-use std::fs;
+use std::{collections::HashMap, fs};
 
 pub struct Composer {
     data: Value,
@@ -28,5 +28,14 @@ impl Composer {
             .chars()
             .filter(|x| !vec!['<', '>', '=', '^', '~'].contains(x))
             .collect::<String>()
+    }
+
+    pub fn all_dependencies(&self) -> HashMap<&String, &serde_json::Value> {
+        self.data()["require"]
+            .as_object()
+            .unwrap()
+            .into_iter()
+            .chain(self.data()["require-dev"].as_object().unwrap())
+            .collect::<HashMap<&String, &serde_json::Value>>()
     }
 }

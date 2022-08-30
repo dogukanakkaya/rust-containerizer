@@ -1,5 +1,5 @@
 use serde_json::Value;
-use std::fs;
+use std::{collections::HashMap, fs};
 
 pub struct Package {
     data: Value,
@@ -28,5 +28,15 @@ impl Package {
             .chars()
             .filter(|x| !vec!['<', '>', '=', '^', '~'].contains(x))
             .collect::<String>()
+    }
+
+    // merge dependencies and devDependencies to single map
+    pub fn all_dependencies(&self) -> HashMap<&String, &serde_json::Value> {
+        self.data()["dependencies"]
+            .as_object()
+            .unwrap()
+            .into_iter()
+            .chain(self.data()["devDependencies"].as_object().unwrap())
+            .collect::<HashMap<&String, &serde_json::Value>>()
     }
 }

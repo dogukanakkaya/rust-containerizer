@@ -12,6 +12,12 @@ services:
     depends_on:
     - redis
     - mongo
+  redis:
+    image: redis
+    ports:
+    - 6379:6379
+    volumes:
+    - redis_data:/data
   mongo:
     image: mongo
     ports:
@@ -21,12 +27,6 @@ services:
     environment:
     - MONGO_INITDB_ROOT_USERNAME=root
     - MONGO_INITDB_ROOT_PASSWORD=123456
-  redis:
-    image: redis
-    ports:
-    - 6379:6379
-    volumes:
-    - redis_data:/data
 volumes:
-  mongo_data: {}
   redis_data: {}
+  mongo_data: {}

@@ -43,4 +43,16 @@ impl Image {
             Self::Elasticsearch => Box::new(Elasticsearch::new()),
         }
     }
+
+    pub fn filter_implemented_images(images: &Vec<String>) -> Vec<&String> {
+        let mut implemented_images = vec![];
+
+        for image in images {
+            if let Ok(_) = image.parse::<Self>() {
+                implemented_images.push(image);
+            }
+        }
+
+        implemented_images
+    }
 }

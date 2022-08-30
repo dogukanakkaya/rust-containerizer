@@ -2,6 +2,7 @@ use super::composer::Composer;
 use crate::{
     compose::Compose,
     drivers::{js::package::Package, DriverGenerator},
+    images::Image,
 };
 use serde_json::json;
 use std::{collections::HashMap, fs::File, io::Write};
@@ -10,6 +11,9 @@ pub struct PHPGenerator {
     options: HashMap<String, String>,
     composer: Composer,
     package: Result<Package, String>,
+    os_packages: Vec<String>,
+    images: Vec<String>,
+    extensions: Vec<String>,
 }
 
 impl PHPGenerator {
@@ -20,27 +24,32 @@ impl PHPGenerator {
             composer: Composer::new(format!("{}/composer.json", project_path)).unwrap(),
             package: Package::new(format!("{}/package.json", project_path)),
             options,
+            os_packages: vec![],
+            images: vec![],
+            extensions: vec![],
         }
-    }
-
-    fn dependencies(&self) -> &serde_json::Map<String, serde_json::Value> {
-        self.composer.data()["require"].as_object().unwrap()
-    }
-
-    fn find_extensions(&self) -> Vec<&str> {
-        let mut extensions = vec![];
-
-        for (key, value) in self.composer.data()["require"].as_object().unwrap().iter() {
-            if key.starts_with("ext-") && value == "*" {
-                extensions.push(&key[4..]);
-            }
-        }
-
-        extensions
     }
 }
 
 impl DriverGenerator for PHPGenerator {
+    fn collect(&mut self) {
+        let all_dependencies = self.composer.all_dependencies();
+
+        for (key, value) in all_dependencies.iter() {
+            if key.starts_with("ext-") && *value == "*" {
+                self.extensions.push(key[4..].to_owned());
+            }
+
+            // @TODO: match with regex or something else instead of hard coded strings
+            match key.as_str() {
+                "phpredis/phpredis" | "predis/predis" => self.images.push("redis".to_owned()),
+                "mongodb" | "mongoose" => self.images.push("mongo".to_owned()),
+                "elasticsearch/elasticsearch" => self.images.push("elasticsearch".to_owned()),
+                _ => {}
+            };
+        }
+    }
+
     fn generate(&self) {
         let project_path = self.options.get("path").unwrap();
 
@@ -56,7 +65,7 @@ RUN apt-get update && apt-get install -y g++ git
 RUN docker-php-ext-install {}
             ",
                 self.composer.find_php_version(),
-                self.find_extensions().join(" ")
+                self.extensions.join(" ")
             )
             .as_str(),
         );
@@ -98,32 +107,19 @@ RUN composer install
         ignore.push_str("\n\n# app\nvendor")
     }
 
-    fn find_images(&self) -> HashMap<String, String> {
-        let mut images: HashMap<String, String> = HashMap::new();
+    fn images(&self) -> &Vec<String> {
+        self.images.as_ref()
+    }
 
-        for (key, value) in self.dependencies().iter() {
-            // @TODO: match with regex or something else instead of hard coded strings
-            let image = match key.as_str() {
-                "phpredis/phpredis" | "predis/predis" => Some("redis".to_owned()),
-                "mongodb" | "mongoose" => Some("mongo".to_owned()),
-                "elasticsearch/elasticsearch" => Some("elasticsearch".to_owned()),
-                _ => None,
-            };
-
-            if let Some(image) = image {
-                images.insert(image, value.to_string());
-            }
-        }
-
-        images
+    fn os_packages(&self) -> &Vec<String> {
+        self.os_packages.as_ref()
     }
 }
 
 impl Compose for PHPGenerator {
     fn find_compose_definition(&self) -> HashMap<&str, serde_json::Value> {
         let project_path = self.options.get("path").unwrap();
-        let images = &self.find_images();
-        let depends_on = images.keys().collect::<Vec<&String>>();
+        let depends_on = Image::filter_implemented_images(&self.images);
 
         HashMap::from([(
             "services",

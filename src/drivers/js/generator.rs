@@ -1,4 +1,5 @@
 use crate::drivers::DriverGenerator;
+use crate::images::Image;
 // use crate::os::os::Os;
 use crate::{compose::Compose, drivers::js::package::Package};
 use serde_json::json;
@@ -8,6 +9,8 @@ use std::{collections::HashMap, fs::File, io::Write};
 pub struct JSGenerator {
     options: HashMap<String, String>,
     package: Package,
+    os_packages: Vec<String>,
+    images: Vec<String>,
 }
 
 impl JSGenerator {
@@ -17,95 +20,22 @@ impl JSGenerator {
         Self {
             package: Package::new(format!("{}/package.json", project_path)).unwrap(),
             options,
+            os_packages: vec![],
+            images: vec![],
         }
-    }
-
-    fn dependencies(&self) -> &serde_json::Map<String, serde_json::Value> {
-        self.package.data()["dependencies"].as_object().unwrap()
-    }
-
-    fn dev_dependencies(&self) -> &serde_json::Map<String, serde_json::Value> {
-        self.package.data()["devDependencies"].as_object().unwrap()
-    }
-
-    fn find_os_packages(&self) -> Vec<String> {
-        let mut os_packages = vec![];
-
-        // later change apt-get / apk commands to match with container os
-        // let os = self.driver_options.get("os")
-        //     .unwrap_or(&"ubuntu".to_owned())
-        //     .parse::<Os>()
-        //     .unwrap();
-
-        // let _ = match os {
-        //     Os::Ubuntu => unimplemented!(),
-        //     Os::Alpine => unimplemented!(),
-        // };
-
-        for (key, _) in self.dependencies().iter() {
-            let os_package = match key.as_str() {
-                "@grpc/grpc-js" | "@grpc/proto-loader" | "protobufjs" => {
-                    Some("libprotobuf-dev protobuf-compiler".to_owned())
-                }
-                _ => None,
-            };
-
-            if let Some(os_package) = os_package {
-                if !os_packages.contains(&os_package) {
-                    os_packages.push(os_package);
-                }
-            }
-        }
-
-        os_packages
     }
 }
 
 impl DriverGenerator for JSGenerator {
-    fn generate(&self) {
-        let project_path = self.options.get("path").unwrap();
-
-        let mut dockerfile = File::create(format!("{}/Dockerfile", project_path))
-            .expect("Dockerfile can't be created.");
-        let mut dockerfile_contents = String::new();
-
-        let version = self.package.find_node_version();
-
-        let os_packages = self.find_os_packages();
-
-        dockerfile_contents.push_str(
-            format!(
-                "FROM node:{}
-WORKDIR /app
-RUN apt-get update
-RUN apt-get install -y {}
-COPY package*.json tsconfig.json ./
-RUN npm i
-COPY . .
-            ",
-                version,
-                os_packages.join(" ")
-            )
-            .as_str(),
-        );
-
-        match dockerfile.write_all(dockerfile_contents.as_bytes()) {
-            Ok(()) => println!("Dockerfile generated at: {}", project_path),
-            Err(_) => unimplemented!(),
-        }
-    }
-
-    fn add_to_ignore(&self, ignore: &mut String) {
-        ignore.push_str("\n\n# app\nnode_modules")
-    }
-
-    fn find_images(&self) -> HashMap<String, String> {
-        let mut images: HashMap<String, String> = HashMap::new();
+    fn collect(&mut self) {
+        let all_dependencies = self.package.all_dependencies();
 
         // @TODO: match with regex or something else instead of hard coded strings
-
-        for (key, value) in self.dev_dependencies().iter() {
-            let image = match key.as_str() {
+        for (key, _value) in all_dependencies.iter() {
+            match key.as_str() {
+                "ioredis" | "redis" => self.images.push("redis".to_owned()),
+                "mongodb" | "mongoose" => self.images.push("mongo".to_owned()),
+                "@elastic/elasticsearch" => self.images.push("elasticsearch".to_owned()),
                 "prisma" => {
                     let prisma_schema = File::open(format!(
                         "{}/prisma/schema.prisma",
@@ -121,45 +51,69 @@ COPY . .
                     let captures = re.captures(&contents).expect("You have `prisma` in your devDependencies yet you don't have `datasource db` definition in schema.prisma file.");
 
                     match &captures[1] {
-                        // "postgresql" | "mysql" => Some(captures[1].to_owned()),
-                        "mongodb" => Some("mongo".to_owned()),
-                        // "cockroachdb" => Some("cockroachdb/cockroach".to_owned()),
-                        // @TODO: for sqlite i have to add it to os packages
-                        _ => None,
+                        "postgresql" | "mysql" => self.images.push(captures[1].to_owned()),
+                        "mongodb" => self.images.push("mongo".to_owned()),
+                        "cockroachdb" => self.images.push("cockroachdb/cockroach".to_owned()),
+                        "sqlite" => self.os_packages.push("sqlite3 libsqlite3-dev".to_owned()),
+                        _ => {}
                     }
                 }
-                _ => None,
+                "@grpc/grpc-js" | "@grpc/proto-loader" | "protobufjs" => self
+                    .os_packages
+                    .push("libprotobuf-dev protobuf-compiler".to_owned()),
+                _ => {}
             };
-
-            if let Some(image) = image {
-                images.insert(image, value.to_string());
-            }
         }
+    }
 
-        for (key, value) in self.dependencies().iter() {
-            let image = match key.as_str() {
-                "ioredis" | "redis" => Some("redis".to_owned()),
-                "mongodb" | "mongoose" => Some("mongo".to_owned()),
-                "@elastic/elasticsearch" => Some("elasticsearch".to_owned()),
-                _ => None,
-            };
+    fn generate(&self) {
+        let project_path = self.options.get("path").unwrap();
 
-            if let Some(image) = image {
-                images.insert(image, value.to_string());
-            }
+        let mut dockerfile = File::create(format!("{}/Dockerfile", project_path))
+            .expect("Dockerfile can't be created.");
+        let mut dockerfile_contents = String::new();
+
+        let version = self.package.find_node_version();
+
+        dockerfile_contents.push_str(
+            format!(
+                "FROM node:{}
+WORKDIR /app
+RUN apt-get update
+RUN apt-get install -y {}
+COPY package*.json tsconfig.json ./
+RUN npm i
+COPY . .
+            ",
+                version,
+                self.os_packages.join(" ")
+            )
+            .as_str(),
+        );
+
+        match dockerfile.write_all(dockerfile_contents.as_bytes()) {
+            Ok(()) => println!("Dockerfile generated at: {}", project_path),
+            Err(_) => unimplemented!(),
         }
+    }
 
-        println!("{:?}", images);
+    fn add_to_ignore(&self, ignore: &mut String) {
+        ignore.push_str("\n\n# app\nnode_modules")
+    }
 
-        images
+    fn images(&self) -> &Vec<String> {
+        self.images.as_ref()
+    }
+
+    fn os_packages(&self) -> &Vec<String> {
+        self.os_packages.as_ref()
     }
 }
 
 impl Compose for JSGenerator {
     fn find_compose_definition(&self) -> HashMap<&str, serde_json::Value> {
         let project_path = self.options.get("path").unwrap();
-        let images = &self.find_images();
-        let depends_on = images.keys().collect::<Vec<&String>>();
+        let depends_on = Image::filter_implemented_images(&self.images);
 
         HashMap::from([(
             "services",
