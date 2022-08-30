@@ -16,8 +16,8 @@ See available drivers, images etc.
   - ioredis | redis
   - elasticsearch
 - PHP
-  - phpredis/phpredis | predis/predis
-  - elasticsearch/elasticsearch
+  - phpredis | predis
+  - elasticsearch
 
 ### Images
 
