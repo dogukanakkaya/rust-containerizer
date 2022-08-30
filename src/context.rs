@@ -39,9 +39,14 @@ impl Context {
             .get("path")
             .expect("Option path is missing. Did you forget to add --path option?");
 
-        // used extensions can be guessed from .env file
-        dotenv::from_filename(format!("{}/.env", project_path))
-            .expect(&format!(".env file is not exists in path {}", project_path));
+        // some of the used extensions can be guessed from .env file
+        match dotenv::from_filename(format!("{}/.env", project_path)) {
+            Err(_) => println!(
+                ".env file is not exists in path {}. Please add one if you have for better output.",
+                project_path
+            ),
+            _ => {}
+        }
 
         let generator: Box<dyn Generator> = match driver {
             Driver::PHP => Box::new(PHPGenerator::new(self.options.clone())),
