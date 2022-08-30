@@ -2,8 +2,6 @@
 
 ## Availability
 
-See available drivers, images etc.
-
 ### Drivers
 
 - JS
@@ -18,14 +16,6 @@ See available drivers, images etc.
 - PHP
   - phpredis | predis
   - elasticsearch
-
-### Images
-
-- Redis
-- Mongo
-- Elasticsearch
-- MySQL
-- PostgreSQL
 
 ### OS
 
